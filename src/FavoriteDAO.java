@@ -1,8 +1,9 @@
 import java.util.List;
 
 public interface FavoriteDAO {
-    void addFavorite(Favorite favorite);
-    void removeFavorite(int userId, int bookId);
-    List<Favorite> getFavoritesByUserId(int userId);
-}
+    // Добавление книги в избранное
+    void addToFavorites(Favorite favorite);
 
+    // Получение всех избранных книг
+    List<Favorite> getAllFavorites();
+}

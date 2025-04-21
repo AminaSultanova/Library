@@ -1,50 +1,48 @@
 public class User {
-    private int id;
-    private String username;
-    private String password;
-    private String type; // reader или librarian
+    private int id;             // Идентификатор пользователя
+    private String name;        // Имя пользователя
+    private String password;    // Пароль пользователя
+    private String userType;    // Тип пользователя (например, "reader" или "librarian")
 
-    public User(int id, String username, String password, String type) {
+    // Конструктор
+    public User(int id, String name, String password, String userType) {
         this.id = id;
-        this.username = username;
+        this.name = name;
         this.password = password;
-        this.type = type;
+        this.userType = userType;
     }
 
+    // Геттеры
     public int getId() {
         return id;
     }
 
-    public void setId(int id) {
-        this.id = id;
-    }
-
-    public String getUsername() {
-        return username;
-    }
-
-    public void setUsername(String username) {
-        this.username = username;
+    public String getName() {
+        return name;
     }
 
     public String getPassword() {
         return password;
     }
 
+    public String getUserType() {
+        return userType;
+    }
+
+    // Сеттеры
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
     public void setPassword(String password) {
         this.password = password;
     }
 
-    public String getType() {
-        return type;
-    }
-
-    public void setType(String type) {
-        this.type = type;
-    }
-
-    @Override
-    public String toString() {
-        return "User{id=" + id + ", username='" + username + "', type='" + type + "'}";
+    public void setUserType(String userType) {
+        this.userType = userType;
     }
 }

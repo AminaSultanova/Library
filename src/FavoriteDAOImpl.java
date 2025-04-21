@@ -1,52 +1,41 @@
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.List;
+import java.sql.*;
 import java.util.ArrayList;
-
+import java.util.List;
 
 public class FavoriteDAOImpl implements FavoriteDAO {
+
     @Override
-    public void addFavorite(Favorite favorite) {
+    public void addToFavorites(Favorite favorite) {
         String sql = "INSERT INTO favorites (user_id, book_id) VALUES (?, ?)";
-        try (Connection connection = DatabaseConnection.getConnection();
-             PreparedStatement statement = connection.prepareStatement(sql)) {
-            statement.setInt(1, favorite.getUserId());
-            statement.setInt(2, favorite.getBookId());
-            statement.executeUpdate();
+
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setInt(1, favorite.getUserId());
+            stmt.setInt(2, favorite.getBookId());
+            stmt.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
         }
     }
 
     @Override
-    public void removeFavorite(int userId, int bookId) {
-        String sql = "DELETE FROM favorites WHERE user_id = ? AND book_id = ?";
-        try (Connection connection = DatabaseConnection.getConnection();
-             PreparedStatement statement = connection.prepareStatement(sql)) {
-            statement.setInt(1, userId);
-            statement.setInt(2, bookId);
-            statement.executeUpdate();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-    }
-
-    @Override
-    public List<Favorite> getFavoritesByUserId(int userId) {
+    public List<Favorite> getAllFavorites() {
         List<Favorite> favorites = new ArrayList<>();
-        String sql = "SELECT * FROM favorites WHERE user_id = ?";
-        try (Connection connection = DatabaseConnection.getConnection();
-             PreparedStatement statement = connection.prepareStatement(sql)) {
-            statement.setInt(1, userId);
-            ResultSet resultSet = statement.executeQuery();
-            while (resultSet.next()) {
-                favorites.add(new Favorite(
-                        resultSet.getInt("id"),
-                        resultSet.getInt("user_id"),
-                        resultSet.getInt("book_id")
-                ));
+        String sql = "SELECT * FROM favorites";
+
+        try (Connection conn = DatabaseConnection.getConnection();
+             Statement stmt = conn.createStatement();
+             ResultSet rs = stmt.executeQuery(sql)) {
+
+            while (rs.next()) {
+                // Создаем объект Favorite с тремя параметрами: id, user_id, book_id
+                Favorite favorite = new Favorite(
+                        rs.getInt("id"),
+                        rs.getInt("user_id"),
+                        rs.getInt("book_id")
+                );
+                favorites.add(favorite);
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -54,4 +43,3 @@ public class FavoriteDAOImpl implements FavoriteDAO {
         return favorites;
     }
 }
-

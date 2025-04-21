@@ -1,3 +1,6 @@
+import java.util.List;
+
 public interface PurchasedBookDAO {
-    void addPurchasedBook(PurchasedBook purchasedBook);
+    void purchaseBook(PurchasedBook purchasedBook);
+    List<PurchasedBook> getAllPurchasedBooks();
 }

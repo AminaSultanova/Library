@@ -3,7 +3,7 @@ public class Favorite {
     private int userId;
     private int bookId;
 
-    // Конструкторы
+    // Конструктор с тремя параметрами
     public Favorite(int id, int userId, int bookId) {
         this.id = id;
         this.userId = userId;
@@ -35,4 +35,3 @@ public class Favorite {
         this.bookId = bookId;
     }
 }
-
