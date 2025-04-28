@@ -54,7 +54,7 @@ public class BookDAO extends BaseDAO<Book> {
             ResultSet rs = stmt.getGeneratedKeys();
 
             if (rs.next()) {
-                return rs.getInt(1); // Возвращаем ID новой книги
+                return rs.getInt(1);
             }
         }
         return -1;

@@ -6,9 +6,8 @@ public class Book {
     private String author;
     private int year;
     private double price;
-    private String status; // "available", "borrowed", "reserved"
+    private String status;
 
-    // Конструкторы
     public Book() {}
 
     public Book(String title, String author, int year, double price, String status) {
@@ -19,7 +18,6 @@ public class Book {
         this.status = status;
     }
 
-    // Геттеры
     public int getId() { return id; }
     public String getTitle() { return title; }
     public String getAuthor() { return author; }
@@ -27,7 +25,6 @@ public class Book {
     public double getPrice() { return price; }
     public String getStatus() { return status; }
 
-    // Сеттеры
     public void setId(int id) { this.id = id; }
     public void setTitle(String title) { this.title = title; }
     public void setAuthor(String author) { this.author = author; }
