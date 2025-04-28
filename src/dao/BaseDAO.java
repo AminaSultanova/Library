@@ -1,4 +1,5 @@
 package dao;
 
-public abstract class BaseDAO {
+
+public abstract class BaseDAO<T> {
 }
