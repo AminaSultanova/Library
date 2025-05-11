@@ -19,4 +19,11 @@ public abstract class User {
     public void setId(int id) { this.id = id; }
     public void setUsername(String username) { this.username = username; }
     public void setPassword(String password) { this.password = password; }
+
+    @Override
+    public String toString() {
+        return String.format("User{id=%d, username='%s', role='%s'}",
+                id, username, getRole());
+    }
+
 }
