@@ -24,7 +24,7 @@ public class AuthService {
         User newUser = new User();
         newUser.setUsername(username);
         newUser.setPassword(password);
-        newUser.setRole("reader");
+        newUser.setType("reader");
 
         return userDao.create(newUser) > 0;
     }
