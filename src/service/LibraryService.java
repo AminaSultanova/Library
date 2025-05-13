@@ -11,7 +11,7 @@ import java.util.List;
 public class LibraryService extends BaseService {
     private final BookDAO bookDAO = new BookDAO();
 
-    //Book management
+    // Book management
 
     public List<Book> getAllBooks() throws SQLException {
         return bookDAO.getAll();
@@ -108,7 +108,7 @@ public class LibraryService extends BaseService {
         return null;
     }
 
-    //Wallet management
+    // Wallet management
 
     public double getBalance(int userId) throws SQLException {
         String sql = "SELECT balance FROM wallets WHERE user_id = ?";
@@ -136,7 +136,7 @@ public class LibraryService extends BaseService {
         }
     }
 
-//Purchased books management
+    // Purchased books management
 
     public boolean purchaseBook(int userId, int bookId) throws SQLException {
         Book book = bookDAO.getById(bookId);
@@ -175,7 +175,7 @@ public class LibraryService extends BaseService {
         return purchased;
     }
 
-//Favorites management
+    // Favorites management
 
     public boolean addFavorite(int userId, int bookId) throws SQLException {
         String sql = "INSERT INTO favorites (user_id, book_id) VALUES (?, ?)";
@@ -202,5 +202,48 @@ public class LibraryService extends BaseService {
             }
         }
         return favorites;
+    }
+
+    // Borrowed books management
+
+    public boolean borrowBook(int userId, int bookId) throws SQLException {
+        Book book = bookDAO.getById(bookId);
+        if (book == null) {
+            throw new IllegalArgumentException("Book not found.");
+        }
+
+        String checkSql = "SELECT * FROM borrowed_books WHERE user_id = ? AND book_id = ?";
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement check = conn.prepareStatement(checkSql)) {
+
+            check.setInt(1, userId);
+            check.setInt(2, bookId);
+            ResultSet rs = check.executeQuery();
+            if (rs.next()) {
+                System.out.println("⚠️ This book has already been borrowed by the user.");
+                return false;
+            }
+        }
+
+        String insertSql = "INSERT INTO borrowed_books (user_id, book_id, borrow_date, due_date) " +
+                "VALUES (?, ?, CURRENT_DATE, CURRENT_DATE + INTERVAL '14 days')";
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(insertSql)) {
+
+            stmt.setInt(1, userId);
+            stmt.setInt(2, bookId);
+            return stmt.executeUpdate() > 0;
+        }
+    }
+
+    public boolean returnBook(int userId, int bookId) throws SQLException {
+        String deleteSql = "DELETE FROM borrowed_books WHERE user_id = ? AND book_id = ?";
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(deleteSql)) {
+
+            stmt.setInt(1, userId);
+            stmt.setInt(2, bookId);
+            return stmt.executeUpdate() > 0;
+        }
     }
 }

@@ -73,19 +73,21 @@ public class ConsoleUI {
             System.out.println("3. Show my favorites");
             System.out.println("4. Show wallet balance");
             System.out.println("5. Buy a book");
-            System.out.println("6. Borrow a book");
-            System.out.println("7. Exit");
+            System.out.println("7. Return borrowed book");
+            System.out.println("8. Exit");
+
             String option = scanner.nextLine();
 
             try {
                 switch (option) {
-                    case "1" ->  libraryService.getAllBooks();
+                    case "1" -> showAllBooks();
                     case "2" -> addToFavorites(user.getId());
                     case "3" -> showFavorites(user.getId());
                     case "4" -> showWallet(user.getId());
                     case "5" -> buyBook(user.getId());
-                    case "6" -> System.out.println("📚 Borrowing is not implemented yet.");
-                    case "7" -> {
+                    case "6" -> borrowBook(user.getId());
+                    case "7" -> returnBook(user.getId());
+                    case "8" -> {
                         System.out.println("Goodbye!");
                         return;
                     }
@@ -128,6 +130,18 @@ public class ConsoleUI {
                 }
             } catch (Exception e) {
                 System.out.println("❌ Error: " + e.getMessage());
+            }
+        }
+    }
+
+    private void showAllBooks() throws SQLException {
+        List<Book> books = libraryService.getAllBooks();
+        if (books.isEmpty()) {
+            System.out.println("📭 No books available.");
+        } else {
+            System.out.println("📚 All available books:");
+            for (Book book : books) {
+                System.out.println(book);
             }
         }
     }
@@ -184,6 +198,40 @@ public class ConsoleUI {
         double balance = libraryService.getBalance(userId);
         System.out.println("💰 Your wallet balance: $" + balance);
     }
+
+    private void borrowBook(int userId) {
+        try {
+            System.out.print("Enter the ID of the book you want to borrow: ");
+            int bookId = Integer.parseInt(scanner.nextLine());
+
+            boolean success = libraryService.borrowBook(userId, bookId);
+            if (success) {
+                System.out.println("✅ Book successfully borrowed.");
+            } else {
+                System.out.println("❌ Could not borrow the book.");
+            }
+        } catch (Exception e) {
+            System.out.println("⚠️ Error while borrowing: " + e.getMessage());
+        }
+    }
+
+    private void returnBook(int userId) {
+        try {
+            System.out.print("Enter the ID of the book to return: ");
+            int bookId = Integer.parseInt(scanner.nextLine());
+
+            boolean success = libraryService.returnBook(userId, bookId);
+            if (success) {
+                System.out.println("✅ Book successfully returned.");
+            } else {
+                System.out.println("❌ Return failed. Maybe you haven’t borrowed this book?");
+            }
+        } catch (Exception e) {
+            System.out.println("⚠️ Error during return: " + e.getMessage());
+        }
+    }
+
+
 
     private void buyBook(int userId) throws SQLException {
         System.out.print("Enter book ID to buy: ");
