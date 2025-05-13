@@ -1,9 +1,10 @@
 package dao;
 
+import util.DatabaseConnection;
+
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.List;
-import util.DatabaseConnection;
 
 
 public abstract class BaseDAO<T> {

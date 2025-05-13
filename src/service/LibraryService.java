@@ -4,7 +4,10 @@ import dao.BookDAO;
 import model.Book;
 import util.DatabaseConnection;
 
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -15,11 +18,6 @@ public class LibraryService extends BaseService {
 
     public List<Book> getAllBooks() throws SQLException {
         return bookDAO.getAll();
-    }
-
-    public Book getBookById(int id) throws SQLException {
-        validatePositiveNumber(id, "Book ID");
-        return bookDAO.getById(id);
     }
 
     public int addBook(String title, String author, int year, double price, String status) throws SQLException {
@@ -52,42 +50,6 @@ public class LibraryService extends BaseService {
     }
 
     // Search functionality
-
-    public List<Book> searchBooksByTitle(String title) throws SQLException {
-        validateString(title, "Title");
-
-        String sql = "SELECT * FROM books WHERE LOWER(title) LIKE LOWER(?)";
-        List<Book> result = new ArrayList<>();
-        try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-
-            stmt.setString(1, "%" + title + "%");
-            ResultSet rs = stmt.executeQuery();
-
-            while (rs.next()) {
-                result.add(bookDAO.getById(rs.getInt("id")));
-            }
-        }
-        return result;
-    }
-
-    public List<Book> searchBooksByAuthor(String author) throws SQLException {
-        validateString(author, "Author");
-
-        String sql = "SELECT * FROM books WHERE LOWER(author) LIKE LOWER(?)";
-        List<Book> result = new ArrayList<>();
-        try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-
-            stmt.setString(1, "%" + author + "%");
-            ResultSet rs = stmt.executeQuery();
-
-            while (rs.next()) {
-                result.add(bookDAO.getById(rs.getInt("id")));
-            }
-        }
-        return result;
-    }
 
     public Book findBookByTitleAndAuthor(String title, String author) throws SQLException {
         validateString(title, "Title");
@@ -157,22 +119,6 @@ public class LibraryService extends BaseService {
             stmt.setInt(2, bookId);
             return stmt.executeUpdate() > 0;
         }
-    }
-
-    public List<Book> getPurchasedBooks(int userId) throws SQLException {
-        String sql = "SELECT b.* FROM books b " +
-                "JOIN purchased_books p ON b.id = p.book_id WHERE p.user_id = ?";
-        List<Book> purchased = new ArrayList<>();
-        try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-
-            stmt.setInt(1, userId);
-            ResultSet rs = stmt.executeQuery();
-            while (rs.next()) {
-                purchased.add(bookDAO.getById(rs.getInt("id")));
-            }
-        }
-        return purchased;
     }
 
     // Favorites management

@@ -1,10 +1,15 @@
 package view;
 
+import dao.UserDAO;
 import model.Book;
 import model.User;
 import service.AuthService;
 import service.LibraryService;
+import util.DatabaseConnection;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Scanner;
@@ -13,9 +18,10 @@ public class ConsoleUI {
     private final Scanner scanner = new Scanner(System.in);
     private final AuthService authService = new AuthService();
     private final LibraryService libraryService = new LibraryService();
+    private final UserDAO userDAO = new UserDAO();
 
     public void start() {
-        System.out.println("Welcome to the Library System.");
+        System.out.println("\uD83D\uDCDA Welcome to the Library System!");
         System.out.println("Please choose an option: ");
         System.out.println("1. Register");
         System.out.println("2. Login");
@@ -39,7 +45,7 @@ public class ConsoleUI {
         try {
             authService.register(name, password, role);
             System.out.println("Registration successful.");
-            login(); // suggest login after registration
+            login();
         } catch (Exception e) {
             System.out.println("❌ Registration failed: " + e.getMessage());
         }
@@ -67,12 +73,13 @@ public class ConsoleUI {
     private void readerMenu(User user) {
         while (true) {
             System.out.println("\nWelcome, dear Reader!");
-            System.out.println("Please choose an option (enter 7 to exit):");
+            System.out.println("Please choose an option (enter 8 to exit):");
             System.out.println("1. Show all books");
             System.out.println("2. Add book to favorites");
             System.out.println("3. Show my favorites");
             System.out.println("4. Show wallet balance");
             System.out.println("5. Buy a book");
+            System.out.println("6. Borrow a book");
             System.out.println("7. Return borrowed book");
             System.out.println("8. Exit");
 
@@ -104,25 +111,24 @@ public class ConsoleUI {
             System.out.println("\nWelcome, dear Librarian!");
             System.out.println("Please choose an option (enter 7 to exit):");
             System.out.println("1. Show all readers");
-            System.out.println("2. Show borrowed books");
-            System.out.println("3. Search for a reader");
-            System.out.println("4. Search for a book");
-            System.out.println("5. Add a book");
-            System.out.println("6. Delete a book");
-            System.out.println("7. Update a book");
-            System.out.println("8. Exit");
+            System.out.println("2. Show all books");
+            System.out.println("3. Show borrowed books");
+            System.out.println("4. Add a book");
+            System.out.println("5. Delete a book");
+            System.out.println("6. Update a book");
+            System.out.println("7. Exit");
+
             String option = scanner.nextLine();
 
             try {
                 switch (option) {
-                    case "1" -> System.out.println("👥 Feature not implemented: show all readers.");
-                    case "2" -> System.out.println("📚 Feature not implemented: borrowed books.");
-                    case "3" -> System.out.println("🔍 Feature not implemented: search reader.");
-                    case "4" -> searchBooks();
-                    case "5" -> addBook();
-                    case "6" -> deleteBook();
-                    case "7" -> updateBook();
-                    case "8" -> {
+                    case "1" -> showAllReaders();
+                    case "2" -> showAllBooks();
+                    case "3" -> showBorrowedBooks();
+                    case "4" -> addBook();
+                    case "5" -> deleteBook();
+                    case "6" -> updateBook();
+                    case "7" -> {
                         System.out.println("Goodbye!");
                         return;
                     }
@@ -131,6 +137,51 @@ public class ConsoleUI {
             } catch (Exception e) {
                 System.out.println("❌ Error: " + e.getMessage());
             }
+        }
+    }
+
+    private void showAllReaders() throws SQLException {
+        List<User> users = userDAO.getAll();
+        boolean found = false;
+        for (User user : users) {
+            if ("reader".equalsIgnoreCase(user.getRole())) {
+                System.out.println(user);
+                found = true;
+            }
+        }
+        if (!found) {
+            System.out.println("📭 No readers found.");
+        }
+    }
+
+    private void showBorrowedBooks() {
+        String sql = """
+            SELECT bb.user_id, u.username, b.id AS book_id, b.title, b.author, bb.borrow_date, bb.due_date
+            FROM borrowed_books bb
+            JOIN books b ON bb.book_id = b.id
+            JOIN users u ON bb.user_id = u.id
+            ORDER BY bb.borrow_date
+        """;
+
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql);
+             ResultSet rs = stmt.executeQuery()) {
+
+            boolean found = false;
+            while (rs.next()) {
+                found = true;
+                System.out.printf("👤 %s (User ID: %d) borrowed 📖 '%s' by %s (Book ID: %d) on %s, due by %s%n",
+                        rs.getString("username"), rs.getInt("user_id"),
+                        rs.getString("title"), rs.getString("author"), rs.getInt("book_id"),
+                        rs.getDate("borrow_date"), rs.getDate("due_date"));
+            }
+
+            if (!found) {
+                System.out.println("📭 No borrowed books found.");
+            }
+
+        } catch (SQLException e) {
+            System.out.println("⚠️ Error retrieving borrowed books: " + e.getMessage());
         }
     }
 
@@ -143,27 +194,6 @@ public class ConsoleUI {
             for (Book book : books) {
                 System.out.println(book);
             }
-        }
-    }
-
-    private void searchBooks() throws SQLException {
-        System.out.println("1. Search by title");
-        System.out.println("2. Search by author");
-        String choice = scanner.nextLine();
-        switch (choice) {
-            case "1" -> {
-                System.out.print("Enter title: ");
-                String title = scanner.nextLine();
-                List<Book> books = libraryService.searchBooksByTitle(title);
-                books.forEach(System.out::println);
-            }
-            case "2" -> {
-                System.out.print("Enter author: ");
-                String author = scanner.nextLine();
-                List<Book> books = libraryService.searchBooksByAuthor(author);
-                books.forEach(System.out::println);
-            }
-            default -> System.out.println("Invalid search option.");
         }
     }
 
@@ -230,8 +260,6 @@ public class ConsoleUI {
             System.out.println("⚠️ Error during return: " + e.getMessage());
         }
     }
-
-
 
     private void buyBook(int userId) throws SQLException {
         System.out.print("Enter book ID to buy: ");
