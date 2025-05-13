@@ -51,7 +51,64 @@ public class LibraryService extends BaseService {
         return bookDAO.delete(id);
     }
 
-//Wallet management
+    // Search functionality
+
+    public List<Book> searchBooksByTitle(String title) throws SQLException {
+        validateString(title, "Title");
+
+        String sql = "SELECT * FROM books WHERE LOWER(title) LIKE LOWER(?)";
+        List<Book> result = new ArrayList<>();
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setString(1, "%" + title + "%");
+            ResultSet rs = stmt.executeQuery();
+
+            while (rs.next()) {
+                result.add(bookDAO.getById(rs.getInt("id")));
+            }
+        }
+        return result;
+    }
+
+    public List<Book> searchBooksByAuthor(String author) throws SQLException {
+        validateString(author, "Author");
+
+        String sql = "SELECT * FROM books WHERE LOWER(author) LIKE LOWER(?)";
+        List<Book> result = new ArrayList<>();
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setString(1, "%" + author + "%");
+            ResultSet rs = stmt.executeQuery();
+
+            while (rs.next()) {
+                result.add(bookDAO.getById(rs.getInt("id")));
+            }
+        }
+        return result;
+    }
+
+    public Book findBookByTitleAndAuthor(String title, String author) throws SQLException {
+        validateString(title, "Title");
+        validateString(author, "Author");
+
+        String sql = "SELECT * FROM books WHERE LOWER(title) = LOWER(?) AND LOWER(author) = LOWER(?)";
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setString(1, title);
+            stmt.setString(2, author);
+            ResultSet rs = stmt.executeQuery();
+
+            if (rs.next()) {
+                return bookDAO.getById(rs.getInt("id"));
+            }
+        }
+        return null;
+    }
+
+    //Wallet management
 
     public double getBalance(int userId) throws SQLException {
         String sql = "SELECT balance FROM wallets WHERE user_id = ?";
